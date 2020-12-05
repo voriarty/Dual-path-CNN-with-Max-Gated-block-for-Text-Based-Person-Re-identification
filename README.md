@@ -41,6 +41,7 @@ you can change hyper-parameter in 'train_config.py'.
 `--dataset` the type of dateset('CUHKPEDES or Flickr30k or flowers')
 
 #save_Directory
+
 `--checkpoint_dir` the path of the saving model.
 
 `--log_dir`  the path of the saving for tensorboardX.
@@ -54,6 +55,7 @@ you can change hyper-parameter in 'train_config.py'.
 `--embedding_type` type of word embedding BERT, glove_768,glove_300,glove_200,glove_100,glove_50'
 
 #glove setting
+
 `--embedding_size` the max_length of the sentence for Glove.
 
 `--vocab_size` the vocab_size of the Glove.
