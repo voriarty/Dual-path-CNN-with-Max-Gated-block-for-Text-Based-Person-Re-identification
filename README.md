@@ -36,6 +36,7 @@ you can change hyper-parameter in 'train_config.py'.
 `--name` the name of model.
 
 #dataset_Directory
+
 `--dir`  the path of training data
 
 `--dataset` the type of dateset('CUHKPEDES or Flickr30k or flowers')
@@ -65,6 +66,7 @@ you can change hyper-parameter in 'train_config.py'.
 `--embedding_dir` the path to store embedding file.
 
 #CNN setting
+
 `--num_classes` the num_classes of the Classification layer.
 
 `--feature_size` the feature size of the visual and textual description.
@@ -74,6 +76,7 @@ you can change hyper-parameter in 'train_config.py'.
 `--droprate` the drop rate
 
 #experiment setting
+
 `--batchsize` batch size.
 
 `--num_epoches` num_epoches
@@ -81,16 +84,19 @@ you can change hyper-parameter in 'train_config.py'.
 `--resume` whether or not to restore the pretrained whole model
 
 #loss function setting
+
 `--CMPM` CPMM loss function setting.
 
 `--CMPC` CMPC loss function setting.
 
 #Optimization setting
+
 `--optimizer` the type of the optimizer ('one of "sgd", "adam", "rmsprop", "adadelta", or "adagrad")
 
 `--wd` 
 
 #adam_setting
+
 `--adam_lr` the learning of adam optimizer
 
 `--adam_alpha`
@@ -100,6 +106,7 @@ you can change hyper-parameter in 'train_config.py'.
 `--epsilon`
 
 #sgd_setting
+
 `--sgd_lr` the learning of sgd optimizer
 
 `--sgd_weight_decay`
