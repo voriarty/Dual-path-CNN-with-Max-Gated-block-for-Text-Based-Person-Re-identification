@@ -48,9 +48,11 @@ you can change hyper-parameter in 'train_config.py'.
 `--log_dir`  the path of the saving for tensorboardX.
 
 #choose of model
+
 `--pool` the type of pooling (our best model is Max_attention).
 
 #word_embedding
+
 `--max_length` the max_length of the sentence
 
 `--embedding_type` type of word embedding BERT, glove_768,glove_300,glove_200,glove_100,glove_50'
