@@ -37,11 +37,15 @@ def test(data_loader, network, args):
         images_bank = images_bank[:index]
         text_bank = text_bank[:index]
         labels_bank = labels_bank[:index]
-        [ac_top1_t2i,ac_top5_t2i, ac_top10_t2i] = compute_topk(text_bank, images_bank, labels_bank, labels_bank, [1,10,20])
+        # [ac_top1_t2i,ac_top5_t2i, ac_top10_t2i] = compute_topk(text_bank, images_bank, labels_bank, labels_bank, [1,10,20])
+
+        ac_top1_t2i, ac_top5_t2i, ac_top10_t2i,mAP=test_map(text_bank, labels_bank,images_bank,  labels_bank)
+
+
         # [ac_top1_i2t,ac_top5_i2t, ac_top10_i2t] = compute_topk(images_bank, text_bank, labels_bank, labels_bank, [1,5,10])
         # ac_top1_i2t, ac_top10_i2t, ac_top1_t2i, ac_top10_t2i = compute_topk(images_bank, text_bank, labels_bank,
         #                                                                     labels_bank, [1, 10], True)
-        return  ac_top1_t2i, ac_top5_t2i,ac_top10_t2i
+        return  ac_top1_t2i, ac_top5_t2i,ac_top10_t2i,mAP
         # return ac_top1_i2t,ac_top5_i2t, ac_top10_i2t
 
 def main(model,args):
@@ -56,6 +60,7 @@ def main(model,args):
     ac_t2i_top1_best = 0.0
     ac_t2i_top5_best = 0.0
     ac_t2i_top10_best = 0.0
+    mAP_best=0.0
     #返回指定路径下的文件和文件夹列表。
     best=0
     dst_best = args.checkpoint_dir + "/model_best" + ".pth.tar"
@@ -67,20 +72,22 @@ def main(model,args):
         if os.path.isdir(model_file):
             continue
         start, network = load_checkpoint(model, model_file)
-        ac_top1_t2i, ac_top5_t2i,ac_top10_t2i= test(test_loaders, network, args)
+        ac_top1_t2i, ac_top5_t2i,ac_top10_t2i,mAP= test(test_loaders, network, args)
         if ac_top1_t2i > ac_t2i_top1_best:
             ac_t2i_top1_best = ac_top1_t2i
             ac_t2i_top5_best=ac_top5_t2i
             ac_t2i_top10_best = ac_top10_t2i
+            mAP_best =mAP
             best = i
             shutil.copyfile(model_file, dst_best)
         # print(model_file)
         # print(dst_best)
-        print('Epoch:{} top1_t2i: {:.3f},top5_t2i: {:.3f}, top10_t2i: {:.3f}'
-            .format(i,ac_top1_t2i, ac_top5_t2i,ac_top10_t2i))
 
-    print('Epoch:{}:t2i_top1_best: {:.3f}, t2i_top5_best: {:.3f},t2i_top10_best: {:.3f}'.format(
-            best,ac_t2i_top1_best,ac_t2i_top5_best, ac_t2i_top10_best))
+        # print('Epoch:{} top1_t2i: {:.3f},top5_t2i: {:.3f}, top10_t2i: {:.3f}'
+        #     .format(i,ac_top1_t2i, ac_top5_t2i,ac_top10_t2i))
+    print('Epoch:{}:t2i_top1_best: {:.3f}, t2i_top5_best: {:.3f},t2i_top10_best: {:.3f},'
+          'mAP_best: {:.3f}'.format(
+            best,ac_t2i_top1_best,ac_t2i_top5_best, ac_t2i_top10_best,mAP_best))
 
 if __name__ == '__main__':
 
@@ -106,5 +113,6 @@ if __name__ == '__main__':
     print(args.checkpoint_dir)
     model = Network(args).cuda()
     print("use ", args.pool)
-    # model = nn.DataParallel(model)
+    # model = torch.nn.DataParallel(model)
     main(model,args)
+
