@@ -2,7 +2,7 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description='command for train on CUHK-PEDES')
-    parser.add_argument('--name', default='Experiment88', type=str, help='output model name')
+    parser.add_argument('--name', default='Experiment90', type=str, help='output model name')
 
     #dataset_Directory
     #CUHK-PEDES
@@ -10,7 +10,7 @@ def parse_args():
                         default=r'D:\python\baseline_person\data',
                         help='directory to store dataset')  # 数据路径
     parser.add_argument('--dataset', type=str,
-                        default="Flickr30k",
+                        default="CUHKPEDES",
                         help='CUHKPEDES or Flickr30k or flowers')  # 数据路径
 
     ##save_Directory
@@ -32,13 +32,13 @@ def parse_args():
                              '"spatial_Max","spatial_Avg","spatial_AvgMax"')
 
     #word_embedding
-    parser.add_argument('--max_length', type=int, default=90)
+    parser.add_argument('--max_length', type=int, default=120)
     parser.add_argument('--embedding_type', type=str,
                         default='BERT',
                         help='type of word embedding BERT, glove_768,glove_300,glove_200,glove_100,glove_50')  # 词向量类型
 
     #glove setting
-    parser.add_argument('--embedding_size', type=int, default=50)
+    parser.add_argument('--embedding_size', type=int, default=120)
     parser.add_argument('--vocab_size', type=int, default=7012)
     parser.add_argument('--embed_pretrained', action='store_false',
                         help='whether or not to restore the pretrained word_embedding')
@@ -48,15 +48,15 @@ def parse_args():
 
 
     #CNN setting
-    # parser.add_argument('--num_classes', type=int, default=11003)
-    parser.add_argument('--num_classes', type=int, default=29783)
+    parser.add_argument('--num_classes', type=int, default=11003)
+    # parser.add_argument('--num_classes', type=int, default=29783)
     parser.add_argument('--feature_size', type=int, default=2048)
     parser.add_argument('--pretrained', action='store_false',
                        help='whether or not to restore the pretrained visual model')
     parser.add_argument('--droprate', default=0, type=float, help='drop rate')
 
     #experiment setting
-    parser.add_argument('--batch_size', type=int, default=128)
+    parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--num_epoches', type=int, default=160)
     # parser.add_argument('--resume', default=r'D:\python\baseline_person\checkpoint\Experiment77\143.pth.tar',
     #                     help='whether or not to restore the pretrained whole model')
@@ -86,13 +86,13 @@ def parse_args():
     parser.add_argument('--lr_decay_type', type=str, default='MultiStepLR',
                         help='One of "MultiStepLR" or "StepLR" or "ReduceLROnPlateau"')
     parser.add_argument('--lr_decay_ratio', type=float, default=0.1)
-    parser.add_argument('--end_lr', type=float, default=1e-6,
-                        help='minimum end learning rate used by a polynomial decay learning rate')
+    # parser.add_argument('--end_lr', type=float, default=1e-6,
+    #                     help='minimum end learning rate used by a polynomial decay learning rate')
     parser.add_argument('--epoches_decay', type=str, default='55_80_100_120_140', help='#epoches when learning rate decays')
     parser.add_argument('--warm_epoch', default=10, type=int, help='the first K epoch that needs warm up')
     parser.add_argument('--img_epoch', type=int, default=80, help='img start to train"')
 
     # Default setting
-    parser.add_argument('--gpus', type=str, default='0,1')
+    parser.add_argument('--gpus', type=str, default='0')
     args = parser.parse_args()
     return args
