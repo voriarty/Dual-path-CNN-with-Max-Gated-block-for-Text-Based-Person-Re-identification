@@ -118,6 +118,7 @@ def load_checkpoint(model,resume):
     start_epoch=0
     if os.path.isfile(resume):
         checkpoint = torch.load(resume)
+        # checkpoint= torch.load(resume, map_location='cuda:0')
         start_epoch = checkpoint['epoch']
         model.load_state_dict(checkpoint['state_dict'])
         # print(resume)
@@ -274,6 +275,101 @@ def fix_seed(seed):
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
 
+
+"""
+注意到有两种图像我们不把他们考虑为正确匹配true-matches
+
+一种是Junk_index1 错误检测的图像，主要是包含一些人的部件。
+一种是Junk_index2 相同的人在同一摄像头下，按照reid的定义，我们不需要检索这一类图像。
+"""
+"""
+所以，qf来自于query_feature[i]，query_feature来自于test.py中一批图片传入模型得到的特征数组query_feature.numpy()
+同样，gf来自于gallery_feature，来自于test.py中一批图片传入模型得到的特征数组gallery_feature.numpy()
+"""
+"evaluate(query_feature[i],query_label[i],query_cam[i],gallery_feature,gallery_label,gallery_cam)"
+
+
+def test_map(query_feature,query_label,gallery_feature, gallery_label):
+    # 图像特征和文本特征标准化
+    query_feature = query_feature / (query_feature.norm(dim=1, keepdim=True) + 1e-12)
+    gallery_feature = gallery_feature / (gallery_feature.norm(dim=1, keepdim=True) + 1e-12)
+    CMC = torch.IntTensor(len(gallery_label)).zero_()
+    ap = 0.0
+    # print(query_label)
+    for i in range(len(query_label)):
+        ap_tmp, CMC_tmp = evaluate(query_feature[i], query_label[i],  gallery_feature, gallery_label)
+
+        if CMC_tmp[0] == -1:
+            continue
+        CMC = CMC + CMC_tmp
+        ap += ap_tmp
+        # print(i, CMC_tmp[0])
+
+    CMC = CMC.float()
+    CMC = CMC / len(query_label)  # average CMC
+    print('Rank@1:%f Rank@5:%f Rank@10:%f mAP:%f' % (CMC[0], CMC[4], CMC[9], ap / len(query_label)))
+    return CMC[0], CMC[9], CMC[19], ap / len(query_label)
+
+def evaluate(qf, ql, gf, gl):
+    query = qf.view(-1, 1)  ## 通过view改变tensor的形状，-1是自适应的调整，这里把所有数据放到一列上
+    # print(gf.shape)
+    # print(query.shape)
+
+    score = torch.mm(gf, query)  # Cosine Distance 余弦距离等价于L2归一化后的内积
+    # torch.mm表示两个张量的矩阵相乘，因为query只有一列，所以相乘的结果也只有一列
+    score = score.squeeze(1).cpu()  # queeze()功能：去除size为1的维度，包括行和列。当维度大于等于2时，squeeze()无作用。
+    # 其中squeeze(0)代表若第一维度值为1则去除第一维度，squeeze(1)代表若第二维度值为1则去除第二维度。
+    # a.cpu()是把a放在cpu上
+    score = score.numpy()  # 把tensor转换成numpy的格式，为了做后面的排序
+    # predict index
+    index = np.argsort(score)  ##from small to large
+    # argsort()函数是将x中的元素从小到大排列，提取其对应的index(索引)，然后输出到y。
+    # 例如：x[3]=-1最小，所以y[0]=3,x[5]=9最大，所以y[5]=5。
+    index = index[::-1]  # -1是指步长为-1，也就是从最后一个元素到第一个元素逆序输出
+    # index = index[0:2000]
+    # good index
+    """
+    np.argwhere( a ) 
+    返回非0的数组元组的索引，其中a是要索引数组的条件。
+    """
+    # print(gl.shape)
+    # print(ql.shape)
+    gl=gl.cuda().data.cpu().numpy()
+    ql=ql.cuda().data.cpu().numpy()
+    query_index = np.argwhere(gl == ql)  ## 返回满足gl==ql的数组元组的索引，即query和gallery图像所属类别相同。
+
+
+    # 我们可以使用 compute_mAP 来计算最后的结果. 在这个函数中，我们忽略了junk_index带来的影响。
+    CMC_tmp = compute_mAP(index, query_index)
+    return CMC_tmp
+
+
+def compute_mAP(index, good_index):
+    ap = 0
+    cmc = torch.IntTensor(len(index)).zero_()
+    if good_index.size == 0:  # if empty
+        cmc[0] = -1
+        return ap, cmc
+
+
+    # find good_index index
+    ngood = len(good_index)
+    mask = np.in1d(index, good_index)
+    rows_good = np.argwhere(mask == True)
+    rows_good = rows_good.flatten()
+
+    cmc[rows_good[0]:] = 1
+    for i in range(ngood):
+        d_recall = 1.0 / ngood
+        precision = (i + 1) * 1.0 / (rows_good[i] + 1)
+        if rows_good[i] != 0:
+            old_precision = i * 1.0 / rows_good[i]
+        else:
+            old_precision = 1.0
+        ap = ap + d_recall * (old_precision + precision) / 2
+
+    return ap, cmc
+
 if __name__ == '__main__':
     import torchvision.transforms as transforms
     # data_config(image_dir, anno_dir, batch_size, split, max_length, embedding_type, transform):
@@ -298,3 +394,4 @@ if __name__ == '__main__':
     print(caption.shape)
     print(label.shape)
     print(mask.shape)
+
