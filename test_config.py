@@ -9,7 +9,7 @@ def parse_args():
                         default=r'D:\python\baseline_person\data',
                         help='directory to store dataset')  # 数据路径
     parser.add_argument('--dataset', type=str,
-                        default="Flickr30k",
+                        default="CUHKPEDES",
                         help='CUHKPEDES or Flickr30k or flowers')  # 数据路径
 
     # choose of model
@@ -24,14 +24,14 @@ def parse_args():
 
 
     # CNN setting
-    # parser.add_argument('--num_classes', type=int, default=11003)
-    parser.add_argument('--num_classes', type=int, default=29783)
+    parser.add_argument('--num_classes', type=int, default=11003)
+    # parser.add_argument('--num_classes', type=int, default=29783)
     parser.add_argument('--pretrained', action='store_true',
                         help='whether or not to restore the pretrained visual model')
     parser.add_argument('--droprate', default=0, type=float, help='drop rate')
 
     # BERT setting
-    parser.add_argument('--max_length', type=int, default=90)
+    parser.add_argument('--max_length', type=int, default=120)
     parser.add_argument('--embedding_type', type=str,
                         default='BERT',
                         help='type of word embedding BERT, glove_768,glove_300,glove_200,glove_100,glove_50')  # 词向量类型
@@ -46,18 +46,18 @@ def parse_args():
                         help='directory to store embedding file')  # 存储embedding文件路径
 
     parser.add_argument('--model_path', type=str,
-                        default=r"D:\python\baseline_person\checkpoint\Experiment88",
+                        default=r"D:\python\baseline_person\checkpoint\Experiment90",
                         help='directory to load checkpoint')
     parser.add_argument('--checkpoint_dir', type=str,
-                        default="checkpoint/Experiment88",
+                        default="checkpoint/Experiment90",
                         help='directory to store checkpoint')  # 保存节点路径
     parser.add_argument('--log_test_dir', type=str,
-                        default="log_test/Experiment88",
+                        default="log_test/Experiment90",
                         help='directory to store test')  # 保存测试
 
 
     parser.add_argument('--feature_size', type=int, default=2048)
-    parser.add_argument('--batch_size', type=int, default=1024)
+    parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--num_epoches', type=int, default=160)
     parser.add_argument('--gpus', type=str, default='0')
 
